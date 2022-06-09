@@ -1,0 +1,6 @@
+name: Chairs
+version: '${version}'
+main: net.earthmc.chairs.Chairs
+api-version: 1.18
+authors: [ Warriorrr ]
+website: https://github.com/EarthMC/Chairs

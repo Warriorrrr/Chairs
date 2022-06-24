@@ -21,16 +21,25 @@ import org.jetbrains.annotations.Nullable;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Chairs extends JavaPlugin implements Listener {
+    private static final int MAX_DISTANCE = (int) Math.pow(2, 2) + 1;
     private final Map<UUID, Location> chairs = new ConcurrentHashMap<>();
     private final Map<Location, UUID> chairLocations = new ConcurrentHashMap<>();
+    private final Map<UUID, Location> mountLocations = new ConcurrentHashMap<>();
 
     @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
+    }
+
+    @Override
+    public void onDisable() {
+        for (Player player : Bukkit.getOnlinePlayers())
+            dismount(player, true);
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -44,11 +53,10 @@ public final class Chairs extends JavaPlugin implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Entity entity = occupied(event.getBlock());
+
         if (entity != null) {
-            entity.eject();
-            entity.remove();
-            chairs.remove(entity.getUniqueId());
-            chairLocations.remove(event.getBlock().getLocation());
+            if (entity.getPassengers().size() > 0 && entity.getPassengers().get(0) instanceof Player player)
+                dismount(player, entity, false);
         }
     }
 
@@ -66,17 +74,20 @@ public final class Chairs extends JavaPlugin implements Listener {
     }
 
     private void sit(Block block, Player player) {
-        if (!isValid(block))
+        // The block is not a chair or the player is already sitting
+        if (!isValid(block) || mountLocations.containsKey(player.getUniqueId()))
             return;
 
         Location location = block.getLocation();
-        if (location.distanceSquared(player.getLocation()) >= 2)
+        if (location.distanceSquared(player.getLocation()) > MAX_DISTANCE)
             return;
 
         location.add(0.5, 0.3, 0.5);
 
         if (block.getBlockData() instanceof Directional dir)
             location.setDirection(dir.getFacing().getOppositeFace().getDirection());
+
+        mountLocations.put(player.getUniqueId(), player.getLocation());
 
         UUID uuid = block.getWorld().spawn(location, ArmorStand.class, armorStand -> {
             player.teleport(armorStand);
@@ -102,10 +113,13 @@ public final class Chairs extends JavaPlugin implements Listener {
             chairLocations.remove(armorStand.getLocation().getBlock().getLocation());
             armorStand.remove();
 
+            Location dismountLocation = Optional.ofNullable(mountLocations.get(player.getUniqueId())).orElse(player.getLocation().add(0, 1.05, 0));
+            mountLocations.remove(player.getUniqueId());
+
             if (quitting)
-                player.teleport(player.getLocation().add(0, 1.05, 0));
+                player.teleport(dismountLocation);
             else
-                player.teleportAsync(player.getLocation().add(0, 1.05, 0));
+                player.teleportAsync(dismountLocation);
         }
     }
 

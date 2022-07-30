@@ -16,9 +16,11 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 import org.spigotmc.event.entity.EntityDismountEvent;
+import org.spigotmc.event.entity.EntityMountEvent;
 
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +41,7 @@ public final class Chairs extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         for (Player player : Bukkit.getOnlinePlayers())
-            dismount(player, true);
+            dismount(player, Bukkit.isStopping());
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -89,16 +91,21 @@ public final class Chairs extends JavaPlugin implements Listener {
 
         mountLocations.put(player.getUniqueId(), player.getLocation());
 
-        UUID uuid = block.getWorld().spawn(location, ArmorStand.class, armorStand -> {
-            player.teleport(armorStand);
+        block.getWorld().spawn(location, ArmorStand.class, armorStand -> {
             armorStand.setMarker(true);
             armorStand.setInvisible(true);
             armorStand.setInvulnerable(false);
-            armorStand.addPassenger(player);
-        }).getUniqueId();
 
-        chairs.put(uuid, block.getLocation());
-        chairLocations.put(block.getLocation(), uuid);
+            // ArmorStand#addPassenger is for some reason not calling the mount event, call manually for compatibility reasons
+            if (!armorStand.addPassenger(player) || !new EntityMountEvent(player, armorStand).callEvent()) {
+                armorStand.remove();
+                mountLocations.remove(player.getUniqueId());
+                return;
+            }
+
+            chairs.put(armorStand.getUniqueId(), block.getLocation());
+            chairLocations.put(block.getLocation(), armorStand.getUniqueId());
+        });
     }
 
     public void dismount(Player player, boolean quitting) {

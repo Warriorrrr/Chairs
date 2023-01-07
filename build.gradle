@@ -2,9 +2,6 @@ plugins {
     id 'java'
 }
 
-group = 'net.earthmc'
-version = '0.0.1'
-
 repositories {
     mavenCentral()
     maven {
@@ -28,12 +25,6 @@ java {
     targetCompatibility = javaVersion
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        options.release = targetJavaVersion
     }
 }
 

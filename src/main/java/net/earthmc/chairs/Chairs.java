@@ -5,7 +5,9 @@ import org.bukkit.Location;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -142,9 +144,9 @@ public final class Chairs extends JavaPlugin implements Listener {
     }
 
     private boolean isValid(Block block) {
-        if (!Tag.STAIRS.isTagged(block.getType()))
+        if (!Tag.STAIRS.isTagged(block.getType()) || !(block.getBlockData() instanceof Stairs stairs))
             return false;
 
-        return block.getRelative(BlockFace.UP).isPassable();
+        return stairs.getHalf() == Half.BOTTOM && block.getRelative(BlockFace.UP).isPassable();
     }
 }

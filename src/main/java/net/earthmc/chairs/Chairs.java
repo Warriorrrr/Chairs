@@ -16,7 +16,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 import org.spigotmc.event.entity.EntityDismountEvent;
@@ -122,6 +121,9 @@ public final class Chairs extends JavaPlugin implements Listener {
 
             Location dismountLocation = Optional.ofNullable(mountLocations.get(player.getUniqueId())).orElse(player.getLocation().add(0, 1.05, 0));
             mountLocations.remove(player.getUniqueId());
+
+            dismountLocation.setYaw(player.getLocation().getYaw());
+            dismountLocation.setPitch(player.getLocation().getPitch());
 
             if (quitting)
                 player.teleport(dismountLocation);

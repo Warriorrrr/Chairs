@@ -95,7 +95,7 @@ public final class Chairs extends JavaPlugin implements Listener {
         block.getWorld().spawn(location, ArmorStand.class, armorStand -> {
             armorStand.setMarker(true);
             armorStand.setInvisible(true);
-            armorStand.setInvulnerable(false);
+            armorStand.setInvulnerable(true);
 
             // ArmorStand#addPassenger is for some reason not calling the mount event, call manually for compatibility reasons
             if (!armorStand.addPassenger(player) || !new EntityMountEvent(player, armorStand).callEvent()) {

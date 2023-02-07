@@ -77,8 +77,8 @@ public final class Chairs extends JavaPlugin implements Listener {
     }
 
     private void sit(Block block, Player player) {
-        // The block is not a chair or the player is already sitting
-        if (!isValid(block) || mountLocations.containsKey(player.getUniqueId()))
+        // The block is not a chair, the player is already sitting or someone is already sitting there.
+        if (!isValid(block) || mountLocations.containsKey(player.getUniqueId()) || isOccupied(block))
             return;
 
         Location location = block.getLocation();
@@ -141,6 +141,10 @@ public final class Chairs extends JavaPlugin implements Listener {
             return null;
 
         return Bukkit.getEntity(uuid);
+    }
+
+    public boolean isOccupied(Block block) {
+        return chairLocations.get(block.getLocation()) != null;
     }
 
     private boolean isValid(Block block) {

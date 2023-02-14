@@ -16,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -71,6 +72,19 @@ public final class Chairs extends JavaPlugin implements Listener {
         dismount(player, event.getDismounted(), false);
     }
 
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        final Entity vehicle = event.getPlayer().getVehicle();
+
+        if (vehicle == null || !chairs.containsKey(vehicle.getUniqueId()))
+            return;
+
+        chairs.remove(vehicle.getUniqueId());
+        chairLocations.remove(vehicle.getLocation().getBlock().getLocation());
+        mountLocations.remove(event.getPlayer().getUniqueId());
+        vehicle.remove();
+    }
+
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         dismount(event.getPlayer(), true);
@@ -81,7 +95,7 @@ public final class Chairs extends JavaPlugin implements Listener {
         if (!isValid(block) || mountLocations.containsKey(player.getUniqueId()) || isOccupied(block))
             return;
 
-        Location location = block.getLocation();
+        final Location location = block.getLocation();
         if (location.distanceSquared(player.getLocation()) > MAX_DISTANCE)
             return;
 
@@ -110,7 +124,7 @@ public final class Chairs extends JavaPlugin implements Listener {
     }
 
     public void dismount(Player player, boolean quitting) {
-        Entity armorStand = player.getVehicle();
+        final Entity armorStand = player.getVehicle();
         if (armorStand != null)
             dismount(player, armorStand, quitting);
     }
@@ -121,8 +135,7 @@ public final class Chairs extends JavaPlugin implements Listener {
             chairLocations.remove(armorStand.getLocation().getBlock().getLocation());
             armorStand.remove();
 
-            Location dismountLocation = Optional.ofNullable(mountLocations.get(player.getUniqueId())).orElse(player.getLocation().add(0, 1.05, 0));
-            mountLocations.remove(player.getUniqueId());
+            Location dismountLocation = Optional.ofNullable(mountLocations.remove(player.getUniqueId())).orElse(player.getLocation().add(0, 1.05, 0));
 
             dismountLocation.setYaw(player.getLocation().getYaw());
             dismountLocation.setPitch(player.getLocation().getPitch());

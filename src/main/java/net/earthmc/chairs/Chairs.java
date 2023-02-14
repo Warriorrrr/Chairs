@@ -13,6 +13,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -46,7 +47,7 @@ public final class Chairs extends JavaPlugin implements Listener {
             dismount(player, Bukkit.isStopping());
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null || event.getItem() != null)
             return;
@@ -54,7 +55,7 @@ public final class Chairs extends JavaPlugin implements Listener {
         sit(event.getClickedBlock(), event.getPlayer());
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event) {
         Entity entity = occupied(event.getBlock());
 
@@ -64,7 +65,7 @@ public final class Chairs extends JavaPlugin implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEntityDismount(EntityDismountEvent event) {
         if (!(event.getEntity() instanceof Player player) || event.getDismounted().getType() != EntityType.ARMOR_STAND)
             return;
@@ -72,7 +73,7 @@ public final class Chairs extends JavaPlugin implements Listener {
         dismount(player, event.getDismounted(), false);
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerDeath(PlayerDeathEvent event) {
         final Entity vehicle = event.getPlayer().getVehicle();
 

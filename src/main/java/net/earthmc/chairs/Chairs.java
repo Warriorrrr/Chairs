@@ -17,6 +17,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -57,12 +59,7 @@ public final class Chairs extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event) {
-        Entity entity = occupied(event.getBlock());
-
-        if (entity != null) {
-            if (entity.getPassengers().size() > 0 && entity.getPassengers().get(0) instanceof Player player)
-                dismount(player, entity, false);
-        }
+        blockChanged(event.getBlock());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -89,6 +86,28 @@ public final class Chairs extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         dismount(event.getPlayer(), true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onPistonRetract(BlockPistonRetractEvent event) {
+        for (final Block block : event.getBlocks()) {
+            blockChanged(block);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onPistonExtend(BlockPistonExtendEvent event) {
+        for (final Block block : event.getBlocks())
+            blockChanged(block);
+    }
+
+    private void blockChanged(final Block block) {
+        final Entity armorStand = occupied(block);
+
+        if (armorStand != null) {
+            if (armorStand.getPassengers().size() > 0 && armorStand.getPassengers().get(0) instanceof Player player)
+                dismount(player, armorStand, false);
+        }
     }
 
     private void sit(Block block, Player player) {

@@ -105,7 +105,7 @@ public final class Chairs extends JavaPlugin implements Listener {
         final Entity armorStand = occupied(block);
 
         if (armorStand != null) {
-            if (armorStand.getPassengers().size() > 0 && armorStand.getPassengers().get(0) instanceof Player player)
+            if (!armorStand.getPassengers().isEmpty() && armorStand.getPassengers().get(0) instanceof Player player)
                 dismount(player, armorStand, false);
         }
     }

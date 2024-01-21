@@ -1,4 +1,4 @@
-package net.earthmc.chairs;
+package dev.warriorrr.chairs;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

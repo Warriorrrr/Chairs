@@ -1,7 +1,7 @@
 name: Chairs
 version: '${version}'
-main: net.earthmc.chairs.Chairs
+main: dev.warriorrr.chairs.Chairs
 api-version: '1.20'
 author: Warriorrr
-website: https://github.com/EarthMC/Chairs
+website: https://github.com/Warriorrrr/Chairs
 folia-supported: true

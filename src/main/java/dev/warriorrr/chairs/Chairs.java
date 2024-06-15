@@ -46,7 +46,7 @@ public final class Chairs extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         for (Player player : Bukkit.getOnlinePlayers())
-            dismount(player, Bukkit.isStopping());
+            dismount(player);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -67,7 +67,7 @@ public final class Chairs extends JavaPlugin implements Listener {
         if (!(event.getEntity() instanceof Player player) || event.getDismounted().getType() != EntityType.ARMOR_STAND)
             return;
 
-        dismount(player, event.getDismounted(), false);
+        dismount(player, event.getDismounted());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -85,7 +85,7 @@ public final class Chairs extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        dismount(event.getPlayer(), true);
+        dismount(event.getPlayer());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -106,7 +106,7 @@ public final class Chairs extends JavaPlugin implements Listener {
 
         if (armorStand != null) {
             if (!armorStand.getPassengers().isEmpty() && armorStand.getPassengers().get(0) instanceof Player player)
-                dismount(player, armorStand, false);
+                dismount(player, armorStand);
         }
     }
 
@@ -143,13 +143,13 @@ public final class Chairs extends JavaPlugin implements Listener {
         });
     }
 
-    public void dismount(Player player, boolean quitting) {
+    public void dismount(Player player) {
         final Entity armorStand = player.getVehicle();
         if (armorStand != null)
-            dismount(player, armorStand, quitting);
+            dismount(player, armorStand);
     }
 
-    public void dismount(Player player, Entity armorStand, boolean quitting) {
+    public void dismount(Player player, Entity armorStand) {
         if (chairs.containsKey(armorStand.getUniqueId())) {
             chairs.remove(armorStand.getUniqueId());
             chairLocations.remove(armorStand.getLocation().getBlock().getLocation());
@@ -160,10 +160,7 @@ public final class Chairs extends JavaPlugin implements Listener {
             dismountLocation.setYaw(player.getLocation().getYaw());
             dismountLocation.setPitch(player.getLocation().getPitch());
 
-            if (quitting)
-                player.teleport(dismountLocation);
-            else
-                player.teleportAsync(dismountLocation);
+            player.teleportAsync(dismountLocation).join();
         }
     }
 

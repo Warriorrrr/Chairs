@@ -160,7 +160,7 @@ public final class Chairs extends JavaPlugin implements Listener {
             dismountLocation.setYaw(player.getLocation().getYaw());
             dismountLocation.setPitch(player.getLocation().getPitch());
 
-            player.teleportAsync(dismountLocation).join();
+            player.teleportAsync(dismountLocation);
         }
     }
 

@@ -19,13 +19,12 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.entity.EntityDismountEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
-import org.spigotmc.event.entity.EntityDismountEvent;
-import org.spigotmc.event.entity.EntityMountEvent;
 
 import java.util.Map;
 import java.util.Optional;
@@ -124,23 +123,22 @@ public final class Chairs extends JavaPlugin implements Listener {
         if (block.getBlockData() instanceof Directional dir)
             location.setDirection(dir.getFacing().getOppositeFace().getDirection());
 
-        mountLocations.put(player.getUniqueId(), player.getLocation());
-
-        block.getWorld().spawn(location, ArmorStand.class, armorStand -> {
-            armorStand.setMarker(true);
-            armorStand.setInvisible(true);
-            armorStand.setInvulnerable(true);
-
-            // ArmorStand#addPassenger is for some reason not calling the mount event, call manually for compatibility reasons
-            if (!armorStand.addPassenger(player) || !new EntityMountEvent(player, armorStand).callEvent()) {
-                armorStand.remove();
-                mountLocations.remove(player.getUniqueId());
-                return;
-            }
-
-            chairs.put(armorStand.getUniqueId(), block.getLocation());
-            chairLocations.put(block.getLocation(), armorStand.getUniqueId());
+        final ArmorStand armorStand = block.getWorld().spawn(location, ArmorStand.class, stand -> {
+            stand.setMarker(true);
+            stand.setInvisible(true);
+            stand.setInvulnerable(true);
         });
+
+        final Location originalPlayerLoc = player.getLocation();
+
+        if (!armorStand.addPassenger(player)) {
+            armorStand.remove();
+            return;
+        }
+
+        mountLocations.put(player.getUniqueId(), originalPlayerLoc);
+        chairs.put(armorStand.getUniqueId(), block.getLocation());
+        chairLocations.put(block.getLocation(), armorStand.getUniqueId());
     }
 
     public void dismount(Player player) {

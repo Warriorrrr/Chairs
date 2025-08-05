@@ -118,7 +118,7 @@ public final class Chairs extends JavaPlugin implements Listener {
         if (location.distanceSquared(player.getLocation()) > MAX_DISTANCE)
             return;
 
-        location.add(0.5, 0.3, 0.5);
+        location.add(0.5, 0.5, 0.5);
 
         if (block.getBlockData() instanceof Directional dir)
             location.setDirection(dir.getFacing().getOppositeFace().getDirection());
@@ -127,6 +127,7 @@ public final class Chairs extends JavaPlugin implements Listener {
             stand.setMarker(true);
             stand.setInvisible(true);
             stand.setInvulnerable(true);
+            stand.setPersistent(false);
         });
 
         final Location originalPlayerLoc = player.getLocation();

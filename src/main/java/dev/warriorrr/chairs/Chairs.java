@@ -8,9 +8,9 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.Stairs;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -69,7 +69,7 @@ public final class Chairs extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEntityDismount(EntityDismountEvent event) {
-        if (!(event.getEntity() instanceof Player player) || event.getDismounted().getType() != EntityType.ARMOR_STAND)
+        if (!(event.getEntity() instanceof Player player) || event.getDismounted().getType() != EntityType.ITEM_DISPLAY)
             return;
 
         dismount(player, event.getDismounted());
@@ -107,11 +107,11 @@ public final class Chairs extends JavaPlugin implements Listener {
     }
 
     private void blockChanged(final Block block) {
-        final Entity armorStand = occupied(block);
+        final Entity chair = occupied(block);
 
-        if (armorStand != null) {
-            if (!armorStand.getPassengers().isEmpty() && armorStand.getPassengers().get(0) instanceof Player player)
-                dismount(player, armorStand);
+        if (chair != null) {
+            if (!chair.getPassengers().isEmpty() && chair.getPassengers().get(0) instanceof Player player)
+                dismount(player, chair);
         }
     }
 
@@ -133,36 +133,35 @@ public final class Chairs extends JavaPlugin implements Listener {
         if (block.getBlockData() instanceof Directional dir)
             location.setDirection(dir.getFacing().getOppositeFace().getDirection());
 
-        final ArmorStand armorStand = block.getWorld().spawn(location, ArmorStand.class, stand -> {
-            stand.setMarker(true);
-            stand.setInvisible(true);
-            stand.setInvulnerable(true);
-            stand.setPersistent(false);
+        final Entity chair = block.getWorld().spawn(location, ItemDisplay.class, entity -> {
+            entity.setInvisible(true);
+            entity.setInvulnerable(true);
+            entity.setPersistent(false);
         });
 
         final Location originalPlayerLoc = player.getLocation();
 
-        if (!armorStand.addPassenger(player)) {
-            armorStand.remove();
+        if (!chair.addPassenger(player)) {
+            chair.remove();
             return;
         }
 
         mountLocations.put(player.getUniqueId(), originalPlayerLoc);
-        chairs.put(armorStand.getUniqueId(), block.getLocation());
-        chairLocations.put(block.getLocation(), armorStand.getUniqueId());
+        chairs.put(chair.getUniqueId(), block.getLocation());
+        chairLocations.put(block.getLocation(), chair.getUniqueId());
     }
 
     public void dismount(Player player) {
-        final Entity armorStand = player.getVehicle();
-        if (armorStand != null)
-            dismount(player, armorStand);
+        final Entity chair = player.getVehicle();
+        if (chair != null)
+            dismount(player, chair);
     }
 
-    public void dismount(Player player, Entity armorStand) {
-        if (chairs.containsKey(armorStand.getUniqueId())) {
-            chairs.remove(armorStand.getUniqueId());
-            chairLocations.remove(armorStand.getLocation().getBlock().getLocation());
-            armorStand.remove();
+    public void dismount(Player player, Entity chair) {
+        if (chairs.containsKey(chair.getUniqueId())) {
+            chairs.remove(chair.getUniqueId());
+            chairLocations.remove(chair.getLocation().getBlock().getLocation());
+            chair.remove();
 
             Location dismountLocation = Optional.ofNullable(mountLocations.remove(player.getUniqueId())).orElse(player.getLocation().add(0, 1.05, 0));
 

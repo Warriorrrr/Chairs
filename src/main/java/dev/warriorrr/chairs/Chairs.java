@@ -109,9 +109,8 @@ public final class Chairs extends JavaPlugin implements Listener {
     private void blockChanged(final Block block) {
         final Entity chair = occupied(block);
 
-        if (chair != null) {
-            if (!chair.getPassengers().isEmpty() && chair.getPassengers().get(0) instanceof Player player)
-                dismount(player, chair);
+        if (chair != null && !chair.isEmpty() && chair.getPassengers().get(0) instanceof Player player) {
+            dismount(player, chair);
         }
     }
 
@@ -158,8 +157,7 @@ public final class Chairs extends JavaPlugin implements Listener {
     }
 
     public void dismount(Player player, Entity chair) {
-        if (chairs.containsKey(chair.getUniqueId())) {
-            chairs.remove(chair.getUniqueId());
+        if (chairs.remove(chair.getUniqueId()) != null) {
             chairLocations.remove(chair.getLocation().getBlock().getLocation());
             chair.remove();
 
@@ -178,7 +176,7 @@ public final class Chairs extends JavaPlugin implements Listener {
         if (uuid == null)
             return null;
 
-        return Bukkit.getEntity(uuid);
+        return block.getWorld().getEntity(uuid);
     }
 
     public boolean isOccupied(Block block) {
@@ -186,9 +184,7 @@ public final class Chairs extends JavaPlugin implements Listener {
     }
 
     private boolean isValid(Block block) {
-        if (!Tag.STAIRS.isTagged(block.getType()) || !(block.getBlockData() instanceof Stairs stairs))
-            return false;
-
-        return stairs.getHalf() == Half.BOTTOM && block.getRelative(BlockFace.UP).isPassable();
+        return Tag.STAIRS.isTagged(block.getType()) && block.getBlockData() instanceof Stairs stairs
+                && stairs.getHalf() == Half.BOTTOM && block.getRelative(BlockFace.UP).isPassable();
     }
 }

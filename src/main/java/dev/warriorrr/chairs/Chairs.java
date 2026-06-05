@@ -25,6 +25,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -33,7 +34,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Chairs extends JavaPlugin implements Listener {
-    private static final int MAX_DISTANCE = (int) Math.pow(2, 2) + 1;
+    private static final int MAX_HORIZONTAL_DISTANCE = (int) Math.pow(2, 2) + 1;
+    private static final float MAX_VERTICAL_DISTANCE = 1.5f;
     private final Map<UUID, Location> chairs = new ConcurrentHashMap<>();
     private final Map<Location, UUID> chairLocations = new ConcurrentHashMap<>();
     private final Map<UUID, Location> mountLocations = new ConcurrentHashMap<>();
@@ -118,11 +120,15 @@ public final class Chairs extends JavaPlugin implements Listener {
         if (!isValid(block) || mountLocations.containsKey(player.getUniqueId()) || isOccupied(block))
             return;
 
-        final Location location = block.getLocation();
-        if (location.distanceSquared(player.getLocation()) > MAX_DISTANCE)
-            return;
+        final double dy = block.getY() - player.getY();
+        final double dx = block.getX() - player.getX();
+        final double dz = block.getZ() - player.getZ();
 
-        location.add(0.5, 0.5, 0.5);
+        if (Math.abs(dy) > MAX_VERTICAL_DISTANCE || NumberConversions.square(dx) + NumberConversions.square(dz) > MAX_HORIZONTAL_DISTANCE) {
+            return;
+        }
+
+        final Location location = block.getLocation().add(0.5, 0.5, 0.5);
 
         if (block.getBlockData() instanceof Directional dir)
             location.setDirection(dir.getFacing().getOppositeFace().getDirection());

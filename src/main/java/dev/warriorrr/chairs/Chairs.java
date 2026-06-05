@@ -23,6 +23,7 @@ import org.bukkit.event.entity.EntityDismountEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,10 +51,13 @@ public final class Chairs extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null || event.getItem() != null)
+        final Player player = event.getPlayer();
+        // Teleporting the player in the main hand interact event in 26.1 causes the build.tooHigh message to be sent to them
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getHand() != EquipmentSlot.OFF_HAND || event.getClickedBlock() == null || !player.getInventory().getItemInMainHand().isEmpty()) {
             return;
+        }
 
-        sit(event.getClickedBlock(), event.getPlayer());
+        sit(event.getClickedBlock(), player);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
